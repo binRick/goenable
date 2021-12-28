@@ -1,39 +1,48 @@
+
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOINSTALL=$(GOCMD) install
 GOCLEAN=$(GOCMD) clean
+GOGENERATE=$(GOCMD) generate
 GOGET=$(GOCMD) get
-BINARY_NAME=basic
+PWD=$(shell pwd)
+NAME=$(shell basename $(PWD))
 BUILD_MODE=-buildmode=c-shared
 LOADABLES_DIR=./loadables
 
 .PHONY: build
 
-all: init build test
+all: init generate build test
 
 init:
 	mkdir -p loadables
+	[[ -f go.sum ]] || go mod init $(NAME)
+	go mod tidy
+	go get
 	@color reset
 
 clean:
 	$(GOCLEAN)
-	rm -rf loadables
+	rm -rf loadables go.mod go.sum main_builtins.c main_builtins.h gomodule.h
 	@color reset
 
 get:
 	$(GOGET) github.com/bashgo/goenable
 	$(GOINSTALL) github.com/bashgo/goenable@latest
 
+generate:
+	$(GOGENERATE)
+
 build:
 	@color yellow blue
 	@hr
 	@ansi --magenta --italic  BUILDING..............
 	@hr
-	CGO_ENABLED=1 $(GOBUILD) -o loadables/$(BINARY_NAME) -v $(BUILD_MODE) .
+	CGO_ENABLED=1 $(GOBUILD) -o $(LOADABLES_DIR)/$(NAME) -v $(BUILD_MODE) .
 	@hr
 	@color reset
 
 test:
 	@color green black
-	env bash -c 'enable -f ./$(LOADABLES_DIR)/basic gotrue gofalse mybuiltin;mybuiltin a b c;gofalse;gotrue;gofalse||gotrue'
+	env bash -c 'enable -f ./$(LOADABLES_DIR)/$(NAME) gotrue gofalse mybuiltin;mybuiltin a b c;gofalse;gotrue;gofalse||gotrue'
 	@color reset
