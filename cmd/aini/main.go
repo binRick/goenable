@@ -1,4 +1,4 @@
-//go:generate goenable -input $GOFILE
+//go:generate ./../../bin/goenable -input $GOFILE
 
 package main
 

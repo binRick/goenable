@@ -23,7 +23,7 @@ func aini1() {
 
 	fmt.Fprintf(os.Stderr, "host1 Name=%s\n", inventory.Hosts["host1"].Name)
 
-	pp.Fprintf(os.Stdout, "%s", inventory.Hosts["host1"])
+	pp.Fprintf(os.Stdout, "%s", inventory.Hosts["host1"].Port)
 
 }
 

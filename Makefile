@@ -6,18 +6,13 @@ GOGENERATE=$(GOCMD) generate
 GOGET=$(GOCMD) get
 PWD=$(shell pwd)
 NAME=$(shell basename $(PWD))
-BUILD_MODE=c-shared
-LOADABLES_DIR=loadables
 
 .PHONY: build
 
 all: init generate build test
 
-goenable:
-	[[ -e ../../bin/goenable ]] || { cd ../../. && make; }
-
-init: clean goenable
-	mkdir -p loadables
+init: clean
+	mkdir -p bin
 	[[ -f go.sum ]] || go mod init $(NAME)
 	go mod tidy
 	go get
@@ -25,7 +20,7 @@ init: clean goenable
 
 clean:
 	$(GOCLEAN)
-	rm -rf loadables go.mod go.sum main_builtins.c main_builtins.h gomodule.h
+	rm -rf bin go.mod go.sum
 	@color reset
 
 generate:
@@ -36,11 +31,11 @@ build:
 	@hr
 	@ansi --magenta --italic  BUILDING..............
 	@hr
-	CGO_ENABLED=1 $(GOBUILD) -o $(LOADABLES_DIR)/$(NAME) -v -buildmode=$(BUILD_MODE) .
+	CGO_ENABLED=1 $(GOBUILD) -o bin/$(NAME) -v 
 	@hr
 	@color reset
 
 test:
 	@color green black
-	env bash -c 'enable -f $(LOADABLES_DIR)/$(NAME) gotrue gofalse mybuiltin;mybuiltin a b c;gofalse;gotrue;gofalse||gotrue'
+	./bin/goenable --help 2>&1|grep Usage
 	@color reset
