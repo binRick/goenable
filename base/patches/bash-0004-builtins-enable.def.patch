@@ -1,0 +1,97 @@
+--- bash-5.1.8/builtins/enable.def.orig	2020-06-05 13:20:58.000000000 -0400
++++ bash-5.1.8/builtins/enable.def	2021-12-08 13:38:59.690729851 -0500
+@@ -117,6 +117,8 @@
+   result = EXECUTION_SUCCESS;
+   flags = 0;
+ 
++  fprintf(stderr, "<%d> Enabling Builtin\n", getpid());
++
+   reset_internal_getopt ();
+   while ((opt = internal_getopt (list, "adnpsf:")) != -1)
+     {
+@@ -180,13 +182,26 @@
+       list_some_builtins (filter);
+     }
+ #if defined (HAVE_DLOPEN) && defined (HAVE_DLSYM)
++
++#endif
++#if defined (HAVE_DLOPEN) && defined (HAVE_DLSYM)
+   else if (flags & FFLAG)
+     {
+       filter = (flags & NFLAG) ? DISABLED : ENABLED;
+       if (flags & SFLAG)
+ 	filter |= SPECIAL;
+ 
++  fprintf(stderr,
++    "<%d> Loading Dynamic Builtin %s\n",
++    getpid(),
++    filename
++  );
+       result = dyn_load_builtin (list, filter, filename);
++  fprintf(stderr,
++    "<%d> Loaded Dynamic Builtin %s with result: %d\n",
++    getpid(),
++    filename, result
++  );
+ #if defined (PROGRAMMABLE_COMPLETION)
+       set_itemlist_dirty (&it_builtins);
+ #endif
+@@ -197,9 +212,19 @@
+     {
+       while (list)
+ 	{
++  fprintf(stderr,
++    "<%d> Unloading Dynamic Builtin %s\n",
++    getpid(),
++    list->word->word
++  );
+ 	  opt = dyn_unload_builtin (list->word->word);
+ 	  if (opt == EXECUTION_FAILURE)
+ 	    result = EXECUTION_FAILURE;
++  fprintf(stderr,
++    "<%d> Unloaded Dynamic Builtin %s with result code: %d\n",
++    getpid(),
++    list->word->word, opt
++  );
+ 	  list = list->next;
+ 	}
+ #if defined (PROGRAMMABLE_COMPLETION)
+@@ -221,6 +246,11 @@
+ 	  list = list->next;
+ 	}
+     }
++  fprintf(stderr,
++    "<%d> Builtin Loaded with result: %d\n",
++    getpid(),
++    result
++  );
+   return (result);
+ }
+ 
+@@ -317,6 +347,13 @@
+       if (loadables_path)
+ 	{
+ 	  load_path = find_in_path (filename, loadables_path, FS_NODIRS|FS_EXEC_PREFERRED);
++  fprintf(stderr,
++    "<%d> Builtin %s Loading from %s using path (BASH_LOADABLES_PATH) %s\n",
++    getpid(),
++    filename,
++    load_path,
++    loadables_path
++  );
+ 	  if (load_path)
+ 	    {
+ #if defined (_AIX)
+@@ -442,6 +479,12 @@
+       initialize_shell_builtins ();
+     }
+ 
++  fprintf(stderr,
++    "<%d> dyn_load_builtin> %d total\n",
++    getpid(),
++    num_shell_builtins
++  );
++
+   free (new_builtins);
+   return (EXECUTION_SUCCESS);
+ }

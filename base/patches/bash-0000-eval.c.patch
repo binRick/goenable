@@ -1,0 +1,108 @@
+--- a/eval.c	2021-12-06 16:35:15.469995562 -0500
++++ b/eval.c	2021-12-06 16:34:26.492490895 -0500
+@@ -48,9 +48,18 @@
+ #  include "bashhist.h"
+ #endif
+ 
++#include "icecream.h"
++#include "color.h"
++#include "repos/cry.h/cry.h"
++#include <sysexits.h>
++cry_t simple_cry = cry_new(CRY_SIMPLE, "CRY_SIMPLE");
++cry_t fatal_cry = cry_fatal_new(CRY_FATAL, "CRY_FATAL", true, EX_USAGE);
++cry(&simple_cry, "Crying simply");
++cry(&fatal_cry, "Crying for last time boi");
++
++static void send_pwd_to_eterm PARAMS((void));
++static sighandler alrm_catcher PARAMS((int));
+ 
++long int currentTimeMillis() {
++  struct timeval time;
++  gettimeofday(&time, NULL);
++  return time.tv_sec * 1000 + time.tv_usec / 1000;
++}
++
+ /* Read and execute commands until EOF is reached.  This assumes that
+    the input source has already been initialized. */
+ int
+@@ -63,6 +72,7 @@
+ 
+   current_command = (COMMAND *)NULL;
+ 
++
+   our_indirection_level = ++indirection_level;
+ 
+   if (just_one_command)
+@@ -104,7 +114,7 @@
+ 		 leave existing non-zero values (e.g., > 128 on signal)
+ 		 alone. */
+ 	      if (last_command_exit_value == 0)
+-		set_exit_status (EXECUTION_FAILURE);
++      		set_exit_status (EXECUTION_FAILURE);
+ 	      if (subshell_environment)
+ 		{
+ 		  current_command = (COMMAND *)NULL;
+@@ -114,6 +124,7 @@
+ 	      /* Obstack free command elements, etc. */
+ 	      if (current_command)
+ 		{
++
+ 		  dispose_command (current_command);
+ 		  current_command = (COMMAND *)NULL;
+ 		}
+@@ -162,13 +173,54 @@
+ 		  free (ps0_string);
+ 		}
+ 
+-	      current_command_number++;
++	  current_command_number++;
++    long long started_ts = currentTimeMillis();
++    fprintf(stderr, 
++            ""
++            BG_BLACK
++            FG_I_YELLOW
++            "<%d>"
++            " "
++            BG_BLACK
++            FG_CYAN
++            "[%d]"
++            " "
++            BG_RESET
++            FG_GREEN
++            "(%lld)"
++            " "
++            FG_MAGENTA
++            BG_RESET
++            "CMD-START>"
++            "\n\tCommand: %s"
++            FG_RESET
++            BG_RESET
++            "\n",
++
++            getpid(), current_command_number, started_ts,
++            make_command_string (current_command)
++    );
++    ic_str(make_command_string (current_command));
++    ic_int(current_command_number);
++    ic_long(started_ts);
++
+ 
+ 	      executing = 1;
+ 	      stdin_redir = 0;
+ 
+ 	      execute_command (current_command);
+ 
++    long long ended_ts = currentTimeMillis();
++    fprintf(stderr, 
++            "\tExited: %d"
++            "\n\tDuration: %lldms"
++            "\n",
++            last_command_exit_value,
++            (ended_ts-started_ts)
++    );
++    ic_int(last_command_exit_value);
++    ic_long((ended_ts-started_ts));
++
+ 	    exec_done:
+ 	      QUIT;
+ 

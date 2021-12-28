@@ -1,0 +1,66 @@
+--- a/execute_cmd.c	2021-12-06 16:35:15.665897584 -0500
++++ bash-5.1.8/execute_cmd.c	2021-12-06 16:34:30.483494855 -0500
+@@ -116,6 +116,8 @@
+ extern char *glob_argv_flags;
+ #endif
+ 
++#include "color.h"
++
+ extern int close PARAMS((int));
+ 
+ /* Static functions defined and used in this file. */
+@@ -5454,10 +5456,18 @@
+   SHELL_VAR *hookf;
+   WORD_LIST *wl;
+ 
++
+   stdpath = (cmdflags & CMD_STDPATH);	/* use command -p path */
+   nofork = (cmdflags & CMD_NO_FORK);	/* Don't fork, just exec, if no pipes */
+   pathname = words->word->word;
+ 
++  if (pathname != NULL)
++   fprintf(stderr, 
++    "<%d> Disk Command> %s"
++    "\n",
++    getpid(),
++    pathname
++   );
++
+   p = 0;
+   result = EXECUTION_SUCCESS;
+ #if defined (RESTRICTED_SHELL)
+@@ -5480,6 +5490,17 @@
+   command = search_for_command (pathname, CMDSRCH_HASH|(stdpath ? CMDSRCH_STDPATH : 0));
+   QUIT;
+ 
++  # && strlen(pathname)>0 && strlen(command) > 0)a
++  if (pathname != NULL && stdpath != NULL)
++   fprintf(stderr, 
++    "<%d> Disk Command> "
++    "Path: %s\n"
++    "Pathname: %s\n"
++    "Command: %s\n"
++    "\n",
++    getpid(),
++    stdpath,
++    pathname,
++    command
++  );
+   if (command)
+     {
+       /* If we're optimizing out the fork (implicit `exec'), decrement the
+@@ -5505,6 +5526,13 @@
+     {
+       fork_flags = async ? FORK_ASYNC : 0;
+       pid = make_child (p = savestring (command_line), fork_flags);
++  if (pathname != NULL)
++      fprintf(stderr, 
++        "<%d> Disk Command Forked> "
++        "Command Line: %s\n"
++        "\n",
++        getpid(),
++        command_line
++      );
+     }
+ 
+   if (pid == 0)

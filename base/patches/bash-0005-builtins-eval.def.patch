@@ -1,0 +1,14 @@
+--- bash-5.1.8/builtins/eval.def.orig	2021-12-08 13:41:20.553718070 -0500
++++ bash-5.1.8/builtins/eval.def	2021-12-08 13:41:38.666716555 -0500
+@@ -49,6 +49,11 @@
+ eval_builtin (list)
+      WORD_LIST *list;
+ {
++
++  fprintf(stderr,"<%d>",
++    getpid()
++  )
++
+   if (no_options (list))
+     return (EX_USAGE);
+   list = loptend;	/* skip over possible `--' */

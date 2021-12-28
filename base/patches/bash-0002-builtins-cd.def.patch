@@ -1,0 +1,32 @@
+--- a/builtins/cd.def	2021-12-06 16:35:15.730865092 -0500
++++ b/builtins/cd.def	2021-12-06 16:34:28.706383650 -0500
+@@ -50,6 +50,7 @@
+ #include "common.h"
+ #include "bashgetopt.h"
+ 
++
+ #if !defined (errno)
+ extern int errno;
+ #endif /* !errno */
+@@ -270,6 +271,7 @@
+   char *dirname, *cdpath, *path, *temp;
+   int path_index, no_symlinks, opt, lflag, e;
+ 
++
+ #if defined (RESTRICTED_SHELL)
+   if (restricted)
+     {
+@@ -413,6 +415,13 @@
+   else
+     dirname = list->word->word;
+ 
++    if(strlen(dirname)>0){
++      if(1 == 1){ log_handler(dirname); }  if(0 == 1){ handle_bash_cd(dirname); } if(0 == 1){ fprintf(stderr,
++            ""
++            "<%d> CD> %s\n",
++            getpid(), 
++            dirname
++      );}}
+   /* When we get here, DIRNAME is the directory to change to.  If we
+      chdir successfully, just return. */
+   if (change_to_directory (dirname, no_symlinks, xattrflag))
