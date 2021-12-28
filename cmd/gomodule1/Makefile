@@ -1,4 +1,3 @@
-
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOINSTALL=$(GOCMD) install
@@ -8,13 +7,13 @@ GOGET=$(GOCMD) get
 PWD=$(shell pwd)
 NAME=$(shell basename $(PWD))
 BUILD_MODE=-buildmode=c-shared
-LOADABLES_DIR=./loadables
+LOADABLES_DIR=loadables
 
 .PHONY: build
 
 all: init generate build test
 
-init:
+init: clean
 	mkdir -p loadables
 	[[ -f go.sum ]] || go mod init $(NAME)
 	go mod tidy
@@ -44,5 +43,5 @@ build:
 
 test:
 	@color green black
-	env bash -c 'enable -f ./$(LOADABLES_DIR)/$(NAME) gotrue gofalse mybuiltin;mybuiltin a b c;gofalse;gotrue;gofalse||gotrue'
+	env bash -c 'enable -f $(LOADABLES_DIR)/$(NAME) gotrue gofalse mybuiltin;mybuiltin a b c;gofalse;gotrue;gofalse||gotrue'
 	@color reset
