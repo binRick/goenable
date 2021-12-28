@@ -21,6 +21,7 @@ var (
 
 const (
 	hFile = `
+
 /*
 Most of this content is copied from bash shell source code.
 http://git.savannah.gnu.org/cgit/bash.git

@@ -42,5 +42,5 @@ build:
 
 test:
 	@color green black
-	env bash -c 'enable -f $(LOADABLES_DIR)/$(NAME) gotrue gofalse mybuiltin;mybuiltin a b c;gofalse;gotrue;gofalse||gotrue'
+	env bash -c 'enable -f $(LOADABLES_DIR)/$(NAME) mybuiltin;mybuiltin a b c'
 	@color reset
