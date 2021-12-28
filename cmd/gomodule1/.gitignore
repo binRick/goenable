@@ -1,0 +1,5 @@
+loadables
+*.c
+*.h
+go.mod
+go.sum
